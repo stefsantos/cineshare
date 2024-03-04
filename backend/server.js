@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import connectdb from './db/connectdb.js';
 import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes.js';
+import postRoutes from './routes/postRoutes.js';
 
 dotenv.config();
 connectdb();
@@ -19,6 +20,7 @@ app.use(cookieParser());
 
 //Routes
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 
 

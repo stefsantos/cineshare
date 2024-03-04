@@ -46,6 +46,18 @@ const userSchema = mongoose.Schema({
             default: ""
         },
 
+        watchlist: {
+            type: String,
+            default: []
+
+        },
+
+        favMovies: {
+            type: String, 
+            default: [],
+            maxlength: 5
+        }
+
 }, {
     timestamps: true
 });
