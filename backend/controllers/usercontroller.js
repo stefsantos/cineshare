@@ -1,7 +1,23 @@
-import User from '../models/usermodel.js'; // Ensure this path correctly points to your User model file
+import User from '../models/userModel.js';
 
 import bcrypt from 'bcryptjs';
 import generateTokenAndSetCookies from '../utils/helpers/generateTokenAndSetCookies.js';
+
+const getUserProfile = async (req, res) => {
+
+    const {username} = req.params;
+    try {
+        const user = await User.findOne({username}).select("-password").select("-updatedAt");
+        if(!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        console.log("Error in getUserProfile: ", error.message);
+    }
+};
 
 const signupUser = async (req, res) => {
     try {   
@@ -48,7 +64,7 @@ const signupUser = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
     }
-}
+};
 
 const loginUser = async (req, res) => {
 
@@ -95,11 +111,10 @@ const logoutUser = async (req, res) => {
 };
 
 const followUnfollowUser = async (req, res) => {
-
     try {
         const { id } = req.params;
-        const userToModify = await User.findById(id);  
-        const currentUser = await User.findById(req.user._id); 
+        const userToModify = await User.findById(id);
+        const currentUser = await User.findById(req.user._id);
 
         if (id === req.user._id) {
             return res.status(400).json({ message: "You cannot follow/unfollow yourself" });
@@ -112,68 +127,63 @@ const followUnfollowUser = async (req, res) => {
         const isFollowing = currentUser.following.includes(id);
 
         if(isFollowing) {
-            //unfollow
+            // Correct the logic to remove the target user from the currentUser's following list
             await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+            // Correct the logic to remove the currentUser from the target user's followers list
             await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-            res.status(200).json({ message: "User unfollowed" });
-
+            res.status(200).json({ message: "Unfollowed user" });
         } else {
-            //follow
+            // Correct the logic to add the target user to the currentUser's following list
             await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+            // Correct the logic to add the currentUser to the target user's followers list
             await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-            res.status(200).json({ message: "User followed" });
-
+            res.status(200).json({ message: "Followed user" });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
         console.log("Error in followUnfollowUser: ", error.message);
     }
-
-
-
 };
 
 const updateUser = async (req, res) => {
-
     const { name, username, email, password, profilepic, bio } = req.body;
     const userId = req.user._id;
-    
+
     try {
         let user = await User.findById(userId);
-        if(!user) {
+        if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
 
-        if(req.params.id !== userId.toString()) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
+     
 
-        if(password){
-
+        // Hash new password if provided
+        if (password) {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
-
-            user = await User.findByIdAndUpdate
+            user.password = hashedPassword; // Update password directly on the found user object
         }
 
+        // Update user fields if provided, else keep the current value
         user.name = name || user.name;
         user.username = username || user.username;
         user.email = email || user.email;
-        
         user.profilepic = profilepic || user.profilepic;
         user.bio = bio || user.bio;
 
-        user = await user.save();
+        // Since user is a Mongoose document here, you can just call save() to apply the updates
+        await user.save();
 
-        res.status(200).json({message: "User updated", user});
+        // Optionally, exclude the password when returning the updated user
+        
 
+        res.status(200).json({ message: "User updated", user });
     } catch (error) {
         res.status(500).json({ message: error.message });
         console.log("Error in updateUser: ", error.message);
     }
-
-
 };
 
 
-export { signupUser, loginUser, logoutUser, followUnfollowUser, updateUser };
+
+export { getUserProfile, signupUser, loginUser, logoutUser, followUnfollowUser, updateUser };
