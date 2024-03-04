@@ -22,9 +22,9 @@ const postSchema = mongoose.Schema({
         default: []
     },
 
-    comments: [
+    replies: [
         {
-            userid: {
+            userId: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 ref: 'User'
