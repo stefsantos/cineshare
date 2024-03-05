@@ -2,11 +2,6 @@ import mongoose from 'mongoose';
 
 const userSchema = mongoose.Schema({
 
-        name: {
-            type: String,
-            required: true
-        },
-
         username: {
             type: String,
             required: true,
@@ -47,13 +42,13 @@ const userSchema = mongoose.Schema({
         },
 
         watchlist: {
-            type: String,
+            type: [String],
             default: []
 
         },
 
         favMovies: {
-            type: String, 
+            type: [String], 
             default: [],
             maxlength: 5
         }

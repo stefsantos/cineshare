@@ -21,7 +21,7 @@ const getUserProfile = async (req, res) => {
 
 const signupUser = async (req, res) => {
     try {   
-        const { name, username, email, password } = req.body;
+        const { username, email, password } = req.body;
         
         // Corrected: Use 'User' instead of 'user' for the model variable to match the import and avoid case sensitivity issues
         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
@@ -35,7 +35,6 @@ const signupUser = async (req, res) => {
 
         // Corrected: Use 'User' to create a new instance
         const newUser = new User({
-            name, 
             username, 
             email, 
             password: hashedPassword,
@@ -51,7 +50,6 @@ const signupUser = async (req, res) => {
 
             res.status(201).json({
                 _id: newUser._id,
-                name: newUser.name,
                 username: newUser.username,
                 email: newUser.email,
                 // Optionally include other fields you wish to return
@@ -82,7 +80,6 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             _id: user._id,
-            name: user.name,
             username: user.username,
             email: user.email,
             // Optionally include other fields you wish to return
@@ -146,7 +143,7 @@ const followUnfollowUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-    const { name, username, email, password, profilepic, bio } = req.body;
+    const { username, email, password, profilepic, bio } = req.body;
     const userId = req.user._id;
 
     try {
@@ -165,7 +162,6 @@ const updateUser = async (req, res) => {
         }
 
         // Update user fields if provided, else keep the current value
-        user.name = name || user.name;
         user.username = username || user.username;
         user.email = email || user.email;
         user.profilepic = profilepic || user.profilepic;

@@ -6,11 +6,17 @@ const postSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
+        
+    },
+
+    movie: {
+        type: String,
+        required: true
     },
 
     text: {
         type: String,
-        required: true
+        required: true  
     },
 
     image: {
@@ -21,6 +27,13 @@ const postSchema = mongoose.Schema({
         type: [String],
         default: []
     },
+
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+
+
 
     replies: [
         {

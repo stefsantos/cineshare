@@ -3,16 +3,21 @@ import Post from "../models/postModel.js";
 
 
 const createPost = async (req, res) => {
-    try {
-        const { movie, text, image } = req.body;
 
-        if (!text) {
+    try {
+        const {postedBy, text, image } = req.body;
+
+        if (!postedBy || !text) {
             return res.status(400).json({ message: "Invalid post data" });
         }
 
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(postedBy);
         if (!user) {
             return res.status(400).json({ message: "User does not exist" });
+        }
+
+        if(user._id.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: "Unauthorized" });
         }
 
         const maxLength = 500;
@@ -20,28 +25,24 @@ const createPost = async (req, res) => {
             return res.status(400).json({ message: `Post text must be ${maxLength} characters or less` });
         }
 
-        let newPost = new Post({
-            postedBy: req.user._id, // Use the logged-in user's ID as the postedBy
-            movie,
+        const newPost = new Post({
+            postedBy,
+            user: req.user._id,
             text,
             image
         });
 
         await newPost.save();
 
-        // Corrected way to populate after saving
-        // Directly using populate on the query result
-        newPost = await Post.findById(newPost._id).populate('postedBy', 'username');
-
-        res.status(201).json({ message: "Post created", post: newPost });
+        res.status(201).json({ message: "post created", newPost});
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
+        
     }
+
+
 }
-
-
-
 
 const getPost = async (req, res) => {
 
