@@ -29,34 +29,31 @@ const createPost = async (req, res) => {
 
         await newPost.save();
 
-        // Corrected way to populate after saving
-        // Directly using populate on the query result
         newPost = await Post.findById(newPost._id).populate('postedBy', 'username');
 
         res.status(201).json({ message: "Post created", post: newPost });
+        
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
     }
 }
 
-
-
-
 const getPost = async (req, res) => {
-
     try {
-        const post = await Post.findById(req.params.id)
+        
+        const post = await Post.findById(req.params.id).populate('postedBy', 'username');
 
         if (!post) {
-            return res.status(404).json({ message: "post not found"})
+            return res.status(404).json({ message: "Post not found" });
         }
 
-        res.status(200).json({message: "post found", post});
+        res.status(200).json({ message: "Post found", post });
+
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: error.message });
     }
-    
 }
 
 const deletePost = async (req, res) => {
@@ -148,7 +145,7 @@ const replyToPost = async (req, res) => {
 const getAllFeedPosts = async (req, res) => {
     try {
         // Fetch all posts from the database, sorted by createdAt in descending order (most recent first)
-        const feedPosts = await Post.find().sort({createdAt: -1});
+        const feedPosts = await Post.find().populate('postedBy', 'username').sort({createdAt: -1});
 
         // Check if there are posts available
         if (feedPosts.length === 0) {
@@ -165,7 +162,7 @@ const getAllFeedPosts = async (req, res) => {
 const getFriendFeedPosts = async (req, res) => {
     try {
         const userId = req.user._id;
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).populate('postedBy', 'username');
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
